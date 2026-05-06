@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GeoRescue Quest: NAYAN CITY</title>
+  <style>
+    :root{
+      --bg:#050814;
+      --panel:rgba(9,14,32,.78);
+      --panel2:rgba(16,24,53,.78);
+      --line:rgba(111,231,255,.35);
+      --cyan:#6fe7ff;
+      --pink:#ff5bd6;
+      --yellow:#ffe66d;
+      --green:#78ff9f;
+      --red:#ff586b;
+      --violet:#9b7bff;
+      --text:#eaf7ff;
+      --muted:#9fb4c5;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;height:100%;overflow:hidden;background:radial-gradient(circle at 50% 40%,#111a38,#050814 62%,#02030a);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text)}
+    #game{position:fixed;inset:0}
+    #boot{
+      position:fixed;inset:0;z-index:99;display:flex;align-items:center;justify-content:center;flex-direction:column;
+      background:radial-gradient(circle at center,rgba(65,31,104,.92),rgba(4,7,17,.98));text-align:center;padding:24px;
+    }
+    #boot h1{font-size:clamp(38px,8vw,92px);margin:0;letter-spacing:1px;line-height:.9;text-shadow:0 0 35px rgba(111,231,255,.9)}
+    #boot p{max-width:780px;color:#bdd2e2;font-size:18px;line-height:1.6}
+    #boot .tagline{color:var(--yellow);font-weight:800;text-transform:uppercase;letter-spacing:.16em;margin-bottom:12px}
+    button{
+      border:1px solid rgba(111,231,255,.45);background:linear-gradient(135deg,rgba(27,54,98,.9),rgba(83,33,95,.9));color:white;
+      padding:11px 15px;border-radius:14px;font-weight:800;letter-spacing:.04em;cursor:pointer;box-shadow:0 0 16px rgba(111,231,255,.13);
+      transition:.15s transform,.15s filter,.15s box-shadow;
+    }
+    button:hover{transform:translateY(-1px);filter:brightness(1.15);box-shadow:0 0 24px rgba(111,231,255,.25)}
+    button:disabled{opacity:.42;cursor:not-allowed;transform:none;filter:grayscale(.3)}
+    select{width:100%;border:1px solid rgba(111,231,255,.35);background:rgba(4,8,20,.9);color:white;border-radius:12px;padding:10px;font-weight:700;outline:none}
+    #hudTop{position:fixed;top:14px;left:14px;right:14px;z-index:10;display:grid;grid-template-columns:1.2fr repeat(4,.55fr);gap:10px;pointer-events:none}
+    .card{background:var(--panel);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:18px;box-shadow:0 0 28px rgba(0,0,0,.32), inset 0 0 20px rgba(111,231,255,.04);pointer-events:auto}
+    .brand{padding:14px 16px;display:flex;align-items:center;gap:12px;min-width:0}
+    .logo{width:42px;height:42px;border-radius:14px;background:conic-gradient(from 180deg,var(--cyan),var(--pink),var(--yellow),var(--cyan));box-shadow:0 0 28px rgba(111,231,255,.55);position:relative;flex:0 0 auto}
+    .logo:after{content:"GIS";position:absolute;inset:7px;border-radius:10px;background:#071022;display:grid;place-items:center;color:#fff;font-size:11px;font-weight:900}
+    .brand h2{margin:0;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.brand small{display:block;color:var(--muted);font-size:12px;margin-top:3px}
+    .stat{padding:12px 13px}.stat .label{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}.stat .value{font-size:22px;font-weight:900;margin-top:4px;color:white}.stat .sub{font-size:11px;color:#b6cada;margin-top:2px}.value.good{color:var(--green)}.value.warn{color:var(--yellow)}.value.bad{color:var(--red)}
+    #leftPanel{position:fixed;left:14px;top:104px;bottom:14px;width:350px;z-index:10;padding:14px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+    #rightPanel{position:fixed;right:14px;top:104px;bottom:14px;width:350px;z-index:10;padding:14px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+    .panelTitle{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.panelTitle h3{margin:0;font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--cyan)}.badge{font-size:11px;color:#071022;background:var(--yellow);border-radius:999px;padding:4px 8px;font-weight:900}.section{padding:14px;background:rgba(4,8,20,.55);border:1px solid rgba(111,231,255,.15);border-radius:16px}.missionName{font-size:22px;font-weight:900;margin:4px 0;color:#fff;line-height:1.05}.story{font-size:13px;line-height:1.48;color:#cfe0ef}.danger{height:12px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden;margin:10px 0}.danger>div{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--yellow),var(--red));transition:.25s width}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.kv{background:rgba(111,231,255,.06);border:1px solid rgba(111,231,255,.12);border-radius:13px;padding:9px}.kv b{display:block;font-size:18px}.kv span{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px}.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}.wide{grid-column:1 / -1}.heroList{display:flex;flex-direction:column;gap:8px}.heroCard{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.055)}.heroDot{width:22px;height:22px;border-radius:50%;box-shadow:0 0 18px currentColor}.heroCard b{font-size:13px}.heroCard small{display:block;color:var(--muted);font-size:11px}.heroState{font-size:10px;border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:3px 6px;color:#d6e8f5}.log{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;line-height:1.45;color:#bcd0df;overflow:auto;min-height:110px;max-height:220px;padding-right:4px}.log div{padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+    #miniMap{width:100%;height:210px;background:rgba(1,3,9,.65);border:1px solid rgba(111,231,255,.25);border-radius:16px;display:block}.legend{display:grid;grid-template-columns:1fr 1fr;gap:7px;font-size:11px;color:#bad0df}.leg{display:flex;gap:6px;align-items:center}.sw{width:12px;height:12px;border-radius:3px;background:white}.credits{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:10;color:rgba(215,234,255,.62);font-size:11px;background:rgba(3,5,12,.45);border:1px solid rgba(111,231,255,.15);padding:7px 10px;border-radius:999px;pointer-events:none}.floatingTip{position:fixed;z-index:9;left:50%;top:50%;transform:translate(-50%,-50%);font-size:clamp(38px,8vw,104px);font-weight:1000;color:rgba(255,255,255,.075);text-transform:uppercase;letter-spacing:.04em;pointer-events:none;text-align:center;line-height:.9;text-shadow:0 0 50px rgba(111,231,255,.22)}
+    @media(max-width:1100px){#hudTop{grid-template-columns:1fr 1fr 1fr;}.brand{grid-column:1/-1}#leftPanel,#rightPanel{width:310px;top:160px}.stat .value{font-size:18px}}
+    @media(max-width:760px){#leftPanel,#rightPanel{position:fixed;width:auto;left:10px;right:10px;height:39vh}.leftHidden #leftPanel{display:none}#rightPanel{top:auto;bottom:10px}.rightHidden #rightPanel{display:none}#hudTop{grid-template-columns:1fr 1fr;left:10px;right:10px}.brand{grid-column:1/-1}.stat{padding:9px}.stat .value{font-size:16px}.credits{display:none}}
+  </style>
+</head>
+<body>
+  <div id="game"></div>
+  <div class="floatingTip" id="floatingTip">NAYAN<br>CITY</div>
+
+  <div id="hudTop">
+    <div class="card brand">
+      <div class="logo"></div>
+      <div>
+        <h2>GeoRescue Quest: NAYAN CITY</h2>
+        <small>Synthetic 3D Smart City · Routing Simulator · Superhero Emergency Response</small>
+      </div>
+    </div>
+    <div class="card stat"><div class="label">Stage</div><div class="value" id="stageVal">0</div><div class="sub">semakin tinggi = kota makin chaos</div></div>
+    <div class="card stat"><div class="label">Integrity</div><div class="value good" id="integrityVal">100%</div><div class="sub">bangunan + warga</div></div>
+    <div class="card stat"><div class="label">Score</div><div class="value" id="scoreVal">0</div><div class="sub">rescue points</div></div>
+    <div class="card stat"><div class="label">Timer</div><div class="value warn" id="timerVal">--</div><div class="sub">mission clock</div></div>
+  </div>
+
+  <aside id="leftPanel" class="card">
+    <div class="section">
+      <div class="panelTitle"><h3>Mission Control</h3><span class="badge" id="missionStatus">STANDBY</span></div>
+      <div class="missionName" id="missionName">Belum ada misi</div>
+      <div class="story" id="missionStory">Klik <b>Start Stage</b>. Kota superhero khayalan ini akan menghasilkan kejadian darurat berbasis zona risiko. Kamu harus memilih hero dan membaca hasil analisis rute.</div>
+      <div class="danger"><div id="dangerBar"></div></div>
+      <div class="row3">
+        <div class="kv"><span>District</span><b id="districtVal">--</b></div>
+        <div class="kv"><span>Villain</span><b id="villainVal">--</b></div>
+        <div class="kv"><span>Threat</span><b id="threatVal">--</b></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="panelTitle"><h3>Hero Dispatch</h3><span class="badge">STRATEGY</span></div>
+      <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:6px">Pilih hero</label>
+      <select id="heroSelect"></select>
+      <div class="controls" style="margin-top:10px">
+        <button id="startBtn" class="wide">START STAGE</button>
+        <button id="scanBtn">GIS SCAN</button>
+        <button id="dispatchBtn">DISPATCH</button>
+        <button id="autoBtn" class="wide">AUTO-PICK BEST HERO</button>
+      </div>
+    </div>
+
+    <div class="section" style="min-height:0;overflow:hidden;display:flex;flex-direction:column">
+      <div class="panelTitle"><h3>Heroes</h3><span class="badge">ACTIVE UNITS</span></div>
+      <div class="heroList" id="heroList"></div>
+    </div>
+  </aside>
+
+  <aside id="rightPanel" class="card">
+    <div class="section">
+      <div class="panelTitle"><h3>Mini Map</h3><span class="badge">LOCAL GRID</span></div>
+      <canvas id="miniMap" width="320" height="210"></canvas>
+      <div class="legend" style="margin-top:9px">
+        <div class="leg"><span class="sw" style="background:#6fe7ff"></span>Hero/base</div>
+        <div class="leg"><span class="sw" style="background:#ff586b"></span>Insiden</div>
+        <div class="leg"><span class="sw" style="background:#ffe66d"></span>Rute hasil Dijkstra</div>
+        <div class="leg"><span class="sw" style="background:#555"></span>Jalan kota sintetis</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="panelTitle"><h3>GIS Analytics</h3><span class="badge">DIJKSTRA</span></div>
+      <div class="row">
+        <div class="kv"><span>Route Distance</span><b id="distVal">--</b></div>
+        <div class="kv"><span>ETA Cost</span><b id="etaVal">--</b></div>
+        <div class="kv"><span>Road Risk</span><b id="riskVal">--</b></div>
+        <div class="kv"><span>Nodes</span><b id="nodesVal">--</b></div>
+      </div>
+    </div>
+
+    <div class="section" style="min-height:0;overflow:hidden;display:flex;flex-direction:column;flex:1">
+      <div class="panelTitle"><h3>Story + Spatial Log</h3><button id="exportBtn" style="padding:6px 9px;font-size:11px">EXPORT CSV</button></div>
+      <div class="log" id="log"></div>
+    </div>
+  </aside>
+
+  <div class="credits">Drag = rotate city · Scroll = zoom · synthetic data, no OSM · open this file as index.html on GitHub Pages</div>
+
+  <div id="boot">
+    <div class="tagline">FINAL PROJECT PROTOTYPE</div>
+    <h1>GEORESCUE QUEST<br/>NAYAN CITY</h1>
+    <p>Kota superhero khayalan yang dibuat sebagai <b>synthetic geospatial dataset</b>. Bangunan, distrik, jalan, fasilitas, hero, villain, rute, dan risiko semuanya dibuat di dalam script. Inti SIG: <b>3D modelling/procedural city</b> + <b>routing analysis</b>.</p>
+    <button id="enterBtn">ENTER NAYAN CITY</button>
+  </div>
+
+  <script>
+    // Button dibuat aktif SEBELUM library 3D diload, jadi tidak freeze kalau CDN lambat/gagal.
+    (function(){
+      const enter = document.getElementById('enterBtn');
+      const boot = document.getElementById('boot');
+      if(enter && boot){
+        enter.addEventListener('click', function(){ boot.style.display = 'none'; });
+      }
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+  <script>
+    if(!window.THREE){
+      document.write('<script src="https://unpkg.com/three@0.128.0/build/three.min.js"><\/script>');
+    }
+  </script>
+  <script>
+  (()=>{
+    // =========================================================
+    // GEORESCUE QUEST: NAYAN CITY
+    // Single-file prototype. No OSM. Kota dibuat dari synthetic dataset.
+    // Inti GIS: data spasial buatan, atribut, network graph, routing Dijkstra,
+    // 3D extrusion/procedural modelling, mini map, dan simulation log.
+    // =========================================================
+
+    const $ = id => document.getElementById(id);
+    if(!window.THREE){
+      const btn = $('enterBtn');
+      const story = $('missionStory');
+      if(btn) btn.textContent = 'THREE.JS GAGAL LOAD — CEK INTERNET / REFRESH';
+      if(story) story.innerHTML = 'Library 3D gagal dimuat. Coba refresh halaman, cek koneksi internet, atau upload ulang versi index_fixed.html ini.';
+      console.error('THREE.js failed to load from CDN.');
+      return;
+    }
+    const rand = (a,b)=> a + Math.random()*(b-a);
+    const irand = (a,b)=> Math.floor(rand(a,b+1));
+    const clamp = (v,a,b)=> Math.max(a,Math.min(b,v));
+    const dist2 = (a,b)=> Math.hypot(a.x-b.x,a.z-b.z);
+
+    const COLORS = {
+      road: 0x263044,
+      roadBlocked: 0x7a1522,
+      central: 0x64e6ff,
+      industrial: 0xff8a3d,
+      slum: 0xb470ff,
+      garden: 0x8fff95,
+      harbor: 0x4fa9ff,
+      neon: 0xff5bd6,
+      building: 0x8aa9c8,
+      fire: 0xff5a3d,
+      crime: 0xbe5bff,
+      flood: 0x55aaff,
+      beast: 0xffd54d,
+      quake: 0xffffff,
+      route: 0xffe66d
+    };
+
+    const state = {
+      stage: 0,
+      score: 0,
+      integrity: 100,
+      activeMission: null,
+      selectedHeroId: null,
+      selectedRoute: null,
+      logs: [],
+      animating: false,
+      running: false,
+      lastTick: performance.now(),
+      cameraAngle: Math.PI/4,
+      cameraRadius: 900,
+      cameraHeight: 540,
+      dragging:false,
+      lastMouseX:0,
+      routeLine:null,
+      affectedBuildings: new Set(),
+      csvRows: []
+    };
+
+    const gameEl = $('game');
+    const mini = $('miniMap');
+    const miniCtx = mini.getContext('2d');
+
+    // ---------- Three scene ----------
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0x050814, 700, 1800);
+
+    const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.shadowMap.enabled = true;
+    gameEl.appendChild(renderer.domElement);
+
+    const camera = new THREE.OrthographicCamera(-innerWidth/2, innerWidth/2, innerHeight/2, -innerHeight/2, 1, 3000);
+    scene.add(camera);
+
+    const ambient = new THREE.AmbientLight(0x8ca6ff, .65);
+    scene.add(ambient);
+    const sun = new THREE.DirectionalLight(0xffffff, .8);
+    sun.position.set(350,800,420);
+    sun.castShadow = true;
+    scene.add(sun);
+    const neonLight = new THREE.PointLight(0xff5bd6, 2.2, 980);
+    neonLight.position.set(-240, 160, -170);
+    scene.add(neonLight);
+    const cyanLight = new THREE.PointLight(0x6fe7ff, 2.2, 980);
+    cyanLight.position.set(270, 180, 220);
+    scene.add(cyanLight);
+
+    const ground = new THREE.Mesh(
+      new THREE.BoxGeometry(820, 18, 820),
+      new THREE.MeshStandardMaterial({color:0x081326, roughness:.9, metalness:.05})
+    );
+    ground.position.y = -12;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    const grid = new THREE.GridHelper(820, 20, 0x32506e, 0x17233b);
+    grid.position.y = -2;
+    scene.add(grid);
+
+    // ---------- Synthetic City Dataset ----------
+    const city = makeSyntheticCity();
+    buildCity3D(city);
+    initHeroes();
+    fillHeroSelect();
+    log('NAYAN CITY generated: '+city.buildings.length+' buildings, '+city.nodes.length+' network nodes, '+city.edges.length+' roads.');
+    log('No OSM. Semua data spasial kota khayalan dibuat manual+procedural dalam script.');
+
+    function districtFor(x,z){
+      if(x > 135 && z > 120) return 'Sky Gardens';
+      if(x < -130 && z < -60) return 'Ash District';
+      if(x < -80 && z > 130) return 'Neon Quarter';
+      if(x > 80 && z < -125) return 'Old Harbor';
+      if(x > 100 && z > -80 && z < 110) return 'Shadow Ward';
+      return 'Central Core';
+    }
+    function districtColor(d){
+      return ({'Central Core':COLORS.central,'Ash District':COLORS.industrial,'Shadow Ward':COLORS.slum,'Sky Gardens':COLORS.garden,'Old Harbor':COLORS.harbor,'Neon Quarter':COLORS.neon}[d]||COLORS.central);
+    }
+    function districtRisk(d){
+      return ({'Central Core':.25,'Ash District':.73,'Shadow Ward':.65,'Sky Gardens':.18,'Old Harbor':.55,'Neon Quarter':.78}[d]||.3);
+    }
+    function makeSyntheticCity(){
+      const nodes = [];
+      const nodeMap = new Map();
+      const coords = [-330,-220,-110,0,110,220,330];
+      coords.forEach((x,i)=>coords.forEach((z,j)=>{
+        const id=`N${i}_${j}`;
+        const d=districtFor(x,z);
+        const n={id,x,z,district:d};
+        nodes.push(n); nodeMap.set(id,n);
+      }));
+      const edges=[];
+      function edge(a,b,type='local'){
+        const A=nodeMap.get(a), B=nodeMap.get(b);
+        const len=dist2(A,B);
+        const mid={x:(A.x+B.x)/2,z:(A.z+B.z)/2};
+        const d=districtFor(mid.x,mid.z);
+        let speed = type==='arterial'?62:type==='bridge'?42:34;
+        let risk = districtRisk(d) + (type === 'alley' ? .18 : 0) + rand(-.08,.08);
+        risk=clamp(risk,.05,.93);
+        edges.push({id:`${a}-${b}`,a,b,len,type,speed,risk,blocked:false,district:d});
+      }
+      for(let i=0;i<7;i++){
+        for(let j=0;j<7;j++){
+          if(i<6){
+            const type = (j===3 || i===2) ? 'arterial' : (districtFor(coords[i],coords[j])==='Shadow Ward'?'alley':'local');
+            edge(`N${i}_${j}`,`N${i+1}_${j}`, type);
+          }
+          if(j<6){
+            const type = (i===3 || j===2) ? 'arterial' : (districtFor(coords[i],coords[j])==='Neon Quarter'?'alley':'local');
+            edge(`N${i}_${j}`,`N${i}_${j+1}`, type);
+          }
+        }
+      }
+      // diagonal/shortcut roads to make routing less boring
+      edge('N1_1','N2_2','bridge'); edge('N4_4','N5_5','bridge'); edge('N1_5','N2_4','bridge'); edge('N5_1','N4_2','bridge'); edge('N3_0','N4_1','bridge');
+
+      const buildings=[];
+      let id=1;
+      for(let i=0;i<6;i++){
+        for(let j=0;j<6;j++){
+          const cx=(coords[i]+coords[i+1])/2;
+          const cz=(coords[j]+coords[j+1])/2;
+          const d=districtFor(cx,cz);
+          const count = d==='Central Core'?irand(4,6):d==='Sky Gardens'?irand(2,4):irand(3,5);
+          for(let k=0;k<count;k++){
+            const x=cx+rand(-35,35), z=cz+rand(-35,35);
+            const w=rand(22,48), dep=rand(22,48);
+            let h;
+            if(d==='Central Core') h=rand(70,150);
+            else if(d==='Ash District') h=rand(28,72);
+            else if(d==='Neon Quarter') h=rand(35,95);
+            else if(d==='Sky Gardens') h=rand(22,62);
+            else if(d==='Old Harbor') h=rand(20,54);
+            else h=rand(15,48);
+            let type = 'housing';
+            if(d==='Ash District') type = Math.random()<.65?'industry':'warehouse';
+            if(d==='Neon Quarter') type = Math.random()<.6?'entertainment':'shop';
+            if(d==='Central Core') type = Math.random()<.4?'office':'apartment';
+            if(d==='Sky Gardens') type = Math.random()<.5?'park-tower':'housing';
+            if(d==='Old Harbor') type = Math.random()<.5?'port':'warehouse';
+            buildings.push({id:`B${String(id++).padStart(3,'0')}`,name:buildingName(type,d,id),x,z,w,dep,h,type,district:d,risk:districtRisk(d)+rand(-.1,.12),damage:0});
+          }
+        }
+      }
+      const facilities=[
+        {id:'F1',name:'Nova Citadel',kind:'hero-base',x:0,z:0,node:'N3_3'},
+        {id:'F2',name:'Aqua Dome',kind:'rescue-base',x:275,z:-245,node:'N5_1'},
+        {id:'F3',name:'Titan Forge',kind:'heavy-base',x:-255,z:-190,node:'N1_1'},
+        {id:'F4',name:'Moon Shelter',kind:'shelter',x:245,z:255,node:'N5_5'},
+        {id:'F5',name:'Hyper Hospital',kind:'hospital',x:100,z:0,node:'N4_3'},
+        {id:'F6',name:'Police Drone Hive',kind:'police',x:-245,z:250,node:'N1_5'}
+      ];
+      return {nodes, nodeMap, edges, buildings, facilities};
+    }
+
+    function buildingName(type,d,id){
+      const words={
+        industry:['Fuse Plant','Spark Mill','Hazard Lab','Factory Nine'],
+        warehouse:['Iron Depot','Cargo Block','Smog Storage'],
+        entertainment:['Neon Arcade','Holo Karaoke','Moon Club','Pixel Mall'],
+        shop:['Night Market','Food Stack','Boba Tower'],
+        office:['Council Spire','Data Ministry','Cloud Bank'],
+        apartment:['Citizen Tower','Blue Residence','Sky Dorm'],
+        'park-tower':['Green Habitat','Oxygen Villa','Garden Pod'],
+        housing:['Nayan Home','Small Block','Citizen House'],
+        port:['Tide Dock','Harbor Crane','Blue Pier']
+      };
+      const arr=words[type]||['Building']; return arr[id%arr.length];
+    }
+
+    function buildCity3D(c){
+      // districts as transparent plates
+      const plates=[
+        {name:'Central Core',x:0,z:0,w:260,d:260},{name:'Ash District',x:-245,z:-245,w:250,d:250},{name:'Neon Quarter',x:-245,z:245,w:250,d:250},
+        {name:'Old Harbor',x:245,z:-245,w:250,d:250},{name:'Sky Gardens',x:245,z:245,w:250,d:250},{name:'Shadow Ward',x:245,z:10,w:250,d:230}
+      ];
+      plates.forEach(p=>{
+        const m=new THREE.Mesh(new THREE.BoxGeometry(p.w,4,p.d),new THREE.MeshStandardMaterial({color:districtColor(p.name),transparent:true,opacity:.14,roughness:.75,emissive:districtColor(p.name),emissiveIntensity:.03}));
+        m.position.set(p.x,-5,p.z); scene.add(m);
+      });
+
+      // roads as boxes between nodes
+      c.edges.forEach(e=>{
+        const A=c.nodeMap.get(e.a), B=c.nodeMap.get(e.b);
+        const len=dist2(A,B);
+        const width=e.type==='arterial'?16:e.type==='bridge'?13:10;
+        const geom=new THREE.BoxGeometry(len,3,width);
+        const mat=new THREE.MeshStandardMaterial({color:COLORS.road,roughness:.65,metalness:.25,emissive:0x101827,emissiveIntensity:.07});
+        const mesh=new THREE.Mesh(geom,mat);
+        mesh.position.set((A.x+B.x)/2,0,(A.z+B.z)/2);
+        mesh.rotation.y=Math.atan2(B.z-A.z,B.x-A.x);
+        mesh.userData.edgeId=e.id;
+        e.mesh=mesh;
+        scene.add(mesh);
+      });
+
+      // buildings as extruded cubes
+      c.buildings.forEach(b=>{
+        const color = districtColor(b.district);
+        const mat = new THREE.MeshStandardMaterial({color:color,roughness:.55,metalness:.25,emissive:color,emissiveIntensity:.05});
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(b.w,b.h,b.dep), mat);
+        mesh.position.set(b.x,b.h/2,b.z);
+        mesh.castShadow=true; mesh.receiveShadow=true;
+        mesh.userData.buildingId=b.id;
+        b.mesh=mesh;
+        scene.add(mesh);
+        // roof glow marker
+        if(b.h>90){
+          const cap=new THREE.Mesh(new THREE.BoxGeometry(b.w*.8,2,b.dep*.8),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.38}));
+          cap.position.set(b.x,b.h+2,b.z); scene.add(cap);
+        }
+      });
+
+      // facilities markers
+      c.facilities.forEach(f=>{
+        const group=new THREE.Group();
+        const base=new THREE.Mesh(new THREE.CylinderGeometry(16,16,6,24),new THREE.MeshStandardMaterial({color:0x6fe7ff,emissive:0x6fe7ff,emissiveIntensity:.25}));
+        base.position.y=4; group.add(base);
+        const tower=new THREE.Mesh(new THREE.ConeGeometry(12,32,4),new THREE.MeshStandardMaterial({color:0xffffff,emissive:0x6fe7ff,emissiveIntensity:.35}));
+        tower.position.y=24; tower.rotation.y=Math.PI/4; group.add(tower);
+        group.position.set(f.x,0,f.z); f.mesh=group; scene.add(group);
+      });
+    }
+
+    // ---------- Heroes ----------
+    const heroes = [
+      {id:'nova', name:'Nova Runner', role:'speed rescue', color:0x6fe7ff, node:'N3_3', base:'N3_3', speed:1.85, power:56, specialty:'crime', status:'ready'},
+      {id:'aqua', name:'Aqua Medic', role:'flood/fire support', color:0x55aaff, node:'N5_1', base:'N5_1', speed:1.28, power:72, specialty:'flood', status:'ready'},
+      {id:'titan', name:'Titan Guard', role:'heavy damage control', color:0xffd54d, node:'N1_1', base:'N1_1', speed:.95, power:105, specialty:'beast', status:'ready'},
+      {id:'shade', name:'Shade Warden', role:'night patrol', color:0xff5bd6, node:'N1_5', base:'N1_5', speed:1.45, power:68, specialty:'crime', status:'ready'}
+    ];
+
+    function initHeroes(){
+      heroes.forEach(h=>{
+        const n=city.nodeMap.get(h.node);
+        const group = new THREE.Group();
+        const body = new THREE.Mesh(new THREE.SphereGeometry(14,24,16), new THREE.MeshStandardMaterial({color:h.color,emissive:h.color,emissiveIntensity:.45,roughness:.25}));
+        body.position.y=24; group.add(body);
+        const cape = new THREE.Mesh(new THREE.ConeGeometry(10,28,3), new THREE.MeshStandardMaterial({color:h.color,transparent:true,opacity:.78,emissive:h.color,emissiveIntensity:.15}));
+        cape.position.set(0,7,-12); cape.rotation.x=Math.PI/2; group.add(cape);
+        group.position.set(n.x,0,n.z); h.mesh=group; h.pos={x:n.x,z:n.z}; scene.add(group);
+      });
+    }
+
+    function fillHeroSelect(){
+      const sel=$('heroSelect'); sel.innerHTML='';
+      heroes.forEach(h=>{ const opt=document.createElement('option'); opt.value=h.id; opt.textContent=`${h.name} — ${h.role}`; sel.appendChild(opt); });
+      state.selectedHeroId=heroes[0].id; sel.value=state.selectedHeroId;
+    }
+
+    // ---------- Mission generator ----------
+    const villainTypes = [
+      {type:'crime', name:'Neon Robber Swarm', villain:'The Masked Gang', color:COLORS.crime, preferred:['Neon Quarter','Shadow Ward'], baseThreat:34, story:'Sekelompok penjahat muncul di area padat. Warga butuh hero cepat sebelum kepanikan menyebar.'},
+      {type:'fire', name:'Industrial Firestorm', villain:'Pyro Baron', color:COLORS.fire, preferred:['Ash District','Central Core'], baseThreat:54, story:'Ledakan fasilitas membuat api merambat. Hero harus tiba cepat untuk menekan kerusakan bangunan.'},
+      {type:'flood', name:'Tide Surge Alert', villain:'Flood Kraken', color:COLORS.flood, preferred:['Old Harbor','Shadow Ward'], baseThreat:45, story:'Air naik dari kanal kota. Evakuasi dan rute aman harus diprioritaskan.'},
+      {type:'beast', name:'Kaiju Footstep', villain:'Iron Lizard', color:COLORS.beast, preferred:['Sky Gardens','Ash District'], baseThreat:67, story:'Monster besar masuk ke kota. Hero kuat dibutuhkan agar fasilitas tidak hancur.'},
+      {type:'quake', name:'Gravity Rift', villain:'Void Architect', color:COLORS.quake, preferred:['Central Core','Neon Quarter'], baseThreat:75, story:'Retakan gravitasi membuka anomali ruang. Rute bisa berubah karena beberapa jalan tertutup.'}
+    ];
+
+    function startStage(){
+      if(state.animating) return;
+      cleanupMissionObjects();
+      state.stage++;
+      state.selectedRoute=null;
+      updateBlockedRoads();
+      const vt = villainTypes[Math.min(villainTypes.length-1, irand(0, Math.min(villainTypes.length-1, 1+Math.floor(state.stage/2))))];
+      const candidates = city.buildings.filter(b=>vt.preferred.includes(b.district));
+      const target = candidates[irand(0,candidates.length-1)];
+      const nearestNode = nearestNodeTo({x:target.x,z:target.z});
+      const threat = Math.round(vt.baseThreat + state.stage*8 + districtRisk(target.district)*18 + rand(-8,8));
+      const timeLimit = Math.max(22, 58 - state.stage*4);
+      state.activeMission = {
+        id:'M'+Date.now(), type:vt.type, name:vt.name, villain:vt.villain, story:vt.story,
+        color:vt.color, targetBuilding:target, node:nearestNode.id, x:target.x, z:target.z, threat, danger:0,
+        timeLeft:timeLimit, timeLimit, startedAt:Date.now(), mesh:null, ring:null
+      };
+      spawnIncident3D(state.activeMission);
+      log(`STAGE ${state.stage}: ${vt.villain} muncul di ${target.district}, target ${target.name}.`);
+      log(`Analisis dibutuhkan: pilih hero → GIS Scan → Dispatch. Jalan merah berarti network edge tertutup.`);
+      updateUI(); drawMiniMap();
+    }
+
+    function updateBlockedRoads(){
+      city.edges.forEach(e=>{e.blocked=false; e.mesh.material.color.setHex(COLORS.road); e.mesh.material.emissive.setHex(0x101827);});
+      const blockCount = Math.min(7, Math.floor(state.stage/2));
+      const risky = [...city.edges].sort((a,b)=>b.risk-a.risk);
+      for(let i=0;i<blockCount;i++){
+        const e=risky[irand(0,Math.min(risky.length-1,12+state.stage))];
+        e.blocked=true; e.mesh.material.color.setHex(COLORS.roadBlocked); e.mesh.material.emissive.setHex(0x5c0710); e.mesh.material.emissiveIntensity=.22;
+      }
+    }
+
+    function spawnIncident3D(m){
+      const group=new THREE.Group();
+      const ring=new THREE.Mesh(new THREE.TorusGeometry(27,3,12,42),new THREE.MeshBasicMaterial({color:m.color,transparent:true,opacity:.85}));
+      ring.rotation.x=Math.PI/2; ring.position.y=5; group.add(ring);
+      const villain=new THREE.Mesh(new THREE.OctahedronGeometry(18,0),new THREE.MeshStandardMaterial({color:m.color,emissive:m.color,emissiveIntensity:.5,roughness:.28}));
+      villain.position.y=m.targetBuilding.h+36; group.add(villain);
+      group.position.set(m.x,0,m.z);
+      scene.add(group); m.mesh=group; m.ring=ring; m.villainMesh=villain;
+      // color damaged/target building
+      m.targetBuilding.mesh.material.emissive.setHex(m.color);
+      m.targetBuilding.mesh.material.emissiveIntensity=.22;
+    }
+
+    function cleanupMissionObjects(){
+      if(state.activeMission){
+        const b=state.activeMission.targetBuilding;
+        if(b && b.mesh){ b.mesh.material.emissive.setHex(districtColor(b.district)); b.mesh.material.emissiveIntensity=.05; }
+        if(state.activeMission.mesh) scene.remove(state.activeMission.mesh);
+      }
+      if(state.routeLine){ scene.remove(state.routeLine); state.routeLine=null; }
+      state.activeMission=null;
+      clearGIS();
+    }
+
+    // ---------- GIS Routing: Dijkstra ----------
+    function nearestNodeTo(p){
+      let best=null,bestD=Infinity;
+      city.nodes.forEach(n=>{const d=Math.hypot(n.x-p.x,n.z-p.z); if(d<bestD){best=n;bestD=d;}});
+      return best;
+    }
+    function adjacent(nodeId){
+      return city.edges.filter(e=>!e.blocked && (e.a===nodeId||e.b===nodeId)).map(e=>{
+        const other=e.a===nodeId?e.b:e.a;
+        return {to:other, edge:e};
+      });
+    }
+    function dijkstra(start, goal, hero){
+      const Q=new Set(city.nodes.map(n=>n.id));
+      const cost={}, prev={}, prevEdge={};
+      city.nodes.forEach(n=>cost[n.id]=Infinity); cost[start]=0;
+      while(Q.size){
+        let u=null, best=Infinity;
+        Q.forEach(id=>{if(cost[id]<best){best=cost[id];u=id;}});
+        if(u===null || u===goal) break;
+        Q.delete(u);
+        adjacent(u).forEach(({to,edge})=>{
+          if(!Q.has(to)) return;
+          const roadFactor = edge.type === 'arterial' ? .82 : edge.type === 'bridge' ? .95 : 1.12;
+          const riskPenalty = 1 + edge.risk*.85;
+          const edgeCost = (edge.len / (edge.speed * hero.speed)) * roadFactor * riskPenalty;
+          const alt = cost[u] + edgeCost;
+          if(alt < cost[to]){cost[to]=alt; prev[to]=u; prevEdge[to]=edge;}
+        });
+      }
+      if(cost[goal]===Infinity) return null;
+      const path=[]; const edges=[]; let cur=goal;
+      while(cur){path.unshift(cur); if(prevEdge[cur]) edges.unshift(prevEdge[cur]); cur=prev[cur];}
+      const distance=edges.reduce((s,e)=>s+e.len,0);
+      const risk=edges.length?edges.reduce((s,e)=>s+e.risk,0)/edges.length:0;
+      const eta=cost[goal];
+      return {path,edges,distance,risk,eta};
+    }
+    function scanRoute(heroId=state.selectedHeroId){
+      const m=state.activeMission; if(!m){log('Tidak ada misi. Klik Start Stage dulu.');return null;}
+      const hero=heroes.find(h=>h.id===heroId); if(!hero||hero.status!=='ready'){log('Hero belum ready. Pilih hero lain.');return null;}
+      const route=dijkstra(hero.node,m.node,hero);
+      if(!route){ log(`ROUTE FAILED: semua jalan menuju ${m.targetBuilding.district} terputus.`); clearGIS(); return null;}
+      state.selectedRoute={heroId,route};
+      renderRoute(route.path);
+      log(`GIS SCAN: ${hero.name} → ${m.targetBuilding.district}. Distance ${Math.round(route.distance)} m, ETA cost ${route.eta.toFixed(1)}, avg road risk ${(route.risk*100).toFixed(0)}%.`);
+      updateGIS(route); drawMiniMap(); return route;
+    }
+    function autoPick(){
+      const m=state.activeMission; if(!m){log('Tidak ada misi.');return;}
+      let best=null;
+      heroes.filter(h=>h.status==='ready').forEach(h=>{
+        const r=dijkstra(h.node,m.node,h);
+        if(!r) return;
+        const specialtyBonus = h.specialty===m.type ? .72 : 1;
+        const powerPenalty = h.power < m.threat ? 1 + (m.threat-h.power)/90 : .88;
+        const total = r.eta * specialtyBonus * powerPenalty;
+        if(!best || total<best.total) best={h,r,total};
+      });
+      if(!best){log('AUTO-PICK gagal: tidak ada route viable.'); return;}
+      state.selectedHeroId=best.h.id; $('heroSelect').value=best.h.id;
+      state.selectedRoute={heroId:best.h.id,route:best.r}; renderRoute(best.r.path); updateGIS(best.r);
+      log(`AUTO-PICK: ${best.h.name} dipilih. Strategy score ${best.total.toFixed(1)} karena route + power + specialty.`);
+      updateUI(); drawMiniMap();
+    }
+    function renderRoute(path){
+      if(state.routeLine) scene.remove(state.routeLine);
+      const pts=path.map(id=>{const n=city.nodeMap.get(id); return new THREE.Vector3(n.x,8,n.z);});
+      const geo=new THREE.BufferGeometry().setFromPoints(pts);
+      const mat=new THREE.LineBasicMaterial({color:COLORS.route,linewidth:4});
+      const line=new THREE.Line(geo,mat); state.routeLine=line; scene.add(line);
+    }
+    function clearGIS(){
+      $('distVal').textContent='--';$('etaVal').textContent='--';$('riskVal').textContent='--';$('nodesVal').textContent='--';
+    }
+    function updateGIS(r){
+      $('distVal').textContent=Math.round(r.distance)+' m'; $('etaVal').textContent=r.eta.toFixed(1); $('riskVal').textContent=(r.risk*100).toFixed(0)+'%'; $('nodesVal').textContent=r.path.length;
+    }
+
+    // ---------- Dispatch + fight animation ----------
+    function dispatch(){
+      if(state.animating) return;
+      const m=state.activeMission; if(!m){log('Tidak ada misi.');return;}
+      if(!state.selectedRoute) scanRoute();
+      if(!state.selectedRoute) return;
+      const hero=heroes.find(h=>h.id===state.selectedRoute.heroId); const route=state.selectedRoute.route;
+      if(hero.status!=='ready'){log('Hero tidak ready.');return;}
+      hero.status='en route'; state.animating=true;
+      log(`DISPATCH: ${hero.name} bergerak melewati ${route.path.length} node menuju ${m.villain}.`);
+      animateHeroAlong(hero, route.path, ()=>fight(hero,m,route));
+      updateUI();
+    }
+    function animateHeroAlong(hero,path,done){
+      const points=path.map(id=>city.nodeMap.get(id));
+      let seg=0, t=0;
+      function step(){
+        if(seg>=points.length-1){ done(); return; }
+        const A=points[seg], B=points[seg+1];
+        const d=Math.hypot(B.x-A.x,B.z-A.z);
+        t += (hero.speed*2.2) / Math.max(30,d);
+        if(t>=1){seg++; t=0;}
+        const C=points[Math.min(seg,points.length-1)], D=points[Math.min(seg+1,points.length-1)]||C;
+        const x=C.x+(D.x-C.x)*t, z=C.z+(D.z-C.z)*t;
+        hero.mesh.position.set(x,0,z); hero.pos={x,z};
+        hero.mesh.rotation.y += .08;
+        requestAnimationFrame(step);
+      }
+      step();
+    }
+    function fight(hero,m,route){
+      hero.status='fighting';
+      let frames=0; const specialty=hero.specialty===m.type;
+      const powerScore=hero.power*(specialty?1.25:1) + Math.max(0, 25-route.eta);
+      const success=powerScore >= m.threat*.82;
+      const fightFrames=success?95:145;
+      const pulse = new THREE.PointLight(m.color, 2.2, 180); pulse.position.set(m.x,70,m.z); scene.add(pulse);
+      function loop(){
+        frames++;
+        if(m.mesh){ m.mesh.scale.setScalar(1+Math.sin(frames*.35)*.12); m.villainMesh.rotation.y+=.16; m.villainMesh.rotation.x+=.08; }
+        hero.mesh.scale.setScalar(1+Math.sin(frames*.5)*.18);
+        pulse.intensity=1.2+Math.sin(frames*.55)*1.4;
+        if(frames<fightFrames){ requestAnimationFrame(loop); }
+        else{
+          scene.remove(pulse); hero.mesh.scale.setScalar(1); resolveMission(hero,m,route,success,powerScore);
+        }
+      }
+      loop();
+    }
+    function resolveMission(hero,m,route,success,powerScore){
+      const latePenalty = m.danger*0.35;
+      let damage = success ? Math.max(2, m.threat*0.09 + latePenalty) : Math.max(12, m.threat*0.25 + latePenalty);
+      damage = Math.round(damage);
+      m.targetBuilding.damage += damage; state.affectedBuildings.add(m.targetBuilding.id);
+      state.integrity = clamp(state.integrity - damage/3.2, 0, 100);
+      const points = Math.max(25, Math.round(260 - route.eta*3 - damage*3 + (success?120:0)));
+      state.score += points;
+      hero.status='ready'; hero.node=m.node;
+      hero.pos={x:m.x,z:m.z};
+      const verdict=success?'RESCUE SUCCESS':'PARTIAL RESCUE';
+      log(`${verdict}: ${hero.name} vs ${m.villain}. Damage ${damage}, +${points} score. Power score ${powerScore.toFixed(0)} vs threat ${m.threat}.`);
+      state.csvRows.push({stage:state.stage,mission:m.name,district:m.targetBuilding.district,villain:m.villain,hero:hero.name,distance:Math.round(route.distance),eta:route.eta.toFixed(2),risk:(route.risk*100).toFixed(1),damage,score:points,success});
+      if(m.mesh) scene.remove(m.mesh); m.targetBuilding.mesh.material.emissive.setHex(0x8a1f2a); m.targetBuilding.mesh.material.emissiveIntensity=.18;
+      state.activeMission=null; state.selectedRoute=null; if(state.routeLine){scene.remove(state.routeLine); state.routeLine=null;}
+      state.animating=false;
+      if(state.integrity<=0){ log('GAME OVER: Nayan City runtuh. Analisis redesign diperlukan.'); $('missionStatus').textContent='GAME OVER'; }
+      else { log('Klik START STAGE untuk misi berikutnya. Setiap stage akan menutup lebih banyak edge/rute.'); }
+      updateUI(); drawMiniMap(); clearGIS();
+    }
+
+    // ---------- Game tick ----------
+    function tick(now){
+      const dt=(now-state.lastTick)/1000; state.lastTick=now;
+      const m=state.activeMission;
+      if(m && !state.animating){
+        m.timeLeft = Math.max(0, m.timeLeft-dt);
+        m.danger = clamp(100*(1-m.timeLeft/m.timeLimit),0,100);
+        if(m.timeLeft<=0){
+          const dmg=Math.round(m.threat*.34 + rand(4,16));
+          state.integrity=clamp(state.integrity-dmg/2.4,0,100);
+          m.targetBuilding.damage+=dmg; state.affectedBuildings.add(m.targetBuilding.id);
+          log(`TIME OUT: ${m.villain} menghancurkan ${m.targetBuilding.name}. Damage ${dmg}.`);
+          if(m.mesh) scene.remove(m.mesh); m.targetBuilding.mesh.material.emissive.setHex(0xff0000); m.targetBuilding.mesh.material.emissiveIntensity=.28;
+          state.csvRows.push({stage:state.stage,mission:m.name,district:m.targetBuilding.district,villain:m.villain,hero:'none',distance:'-',eta:'-',risk:'-',damage:dmg,score:0,success:false});
+          state.activeMission=null; state.selectedRoute=null; if(state.routeLine){scene.remove(state.routeLine);state.routeLine=null;}
+          clearGIS();
+        }
+      }
+      if(m && m.mesh){ m.mesh.rotation.y += dt*.9; m.villainMesh.position.y = m.targetBuilding.h + 34 + Math.sin(now*.006)*9; }
+      city.facilities.forEach(f=>{ if(f.mesh) f.mesh.rotation.y += dt*.55; });
+      heroes.forEach(h=>{if(h.mesh) h.mesh.children[0].position.y=24+Math.sin(now*.005+h.power)*3;});
+      updateCamera(); updateUI(false); drawMiniMap();
+      renderer.render(scene,camera);
+      requestAnimationFrame(tick);
+    }
+
+    function updateCamera(){
+      const a=state.cameraAngle, r=state.cameraRadius;
+      camera.position.set(Math.cos(a)*r, state.cameraHeight, Math.sin(a)*r);
+      camera.lookAt(0,0,0);
+      camera.zoom = clamp(900 / r, .7, 1.45);
+      camera.updateProjectionMatrix();
+    }
+
+    // ---------- UI ----------
+    function updateUI(full=true){
+      $('stageVal').textContent=state.stage;
+      $('scoreVal').textContent=state.score;
+      $('integrityVal').textContent=Math.round(state.integrity)+'%';
+      $('integrityVal').className='value '+(state.integrity>70?'good':state.integrity>35?'warn':'bad');
+      const m=state.activeMission;
+      $('timerVal').textContent=m?Math.ceil(m.timeLeft)+'s':'--';
+      $('dangerBar').style.width=m?m.danger+'%':'0%';
+      if(m){
+        $('missionStatus').textContent=state.animating?'ACTIVE':'URGENT';
+        $('missionName').textContent=m.name;
+        $('missionStory').innerHTML=m.story + `<br><br><b>Target:</b> ${m.targetBuilding.name} (${m.targetBuilding.type}). Pilih hero berdasarkan posisi, kecepatan, power, dan specialty.`;
+        $('districtVal').textContent=m.targetBuilding.district.replace(' District','').replace(' Quarter','');
+        $('villainVal').textContent=m.villain.split(' ')[0];
+        $('threatVal').textContent=m.threat;
+      }else{
+        $('missionStatus').textContent=state.integrity<=0?'GAME OVER':'STANDBY';
+        $('missionName').textContent=state.integrity<=0?'Nayan City runtuh':'Belum ada misi aktif';
+        $('missionStory').innerHTML=state.integrity<=0?'Kesimpulan geodesign: kota butuh redesign fasilitas dan jaringan jalan agar tidak collapse. Refresh halaman untuk ulang.':'Klik <b>Start Stage</b>. Kota superhero khayalan ini akan menghasilkan kejadian darurat berbasis zona risiko.';
+        $('districtVal').textContent='--'; $('villainVal').textContent='--'; $('threatVal').textContent='--';
+      }
+      $('startBtn').disabled=!!m || state.animating || state.integrity<=0;
+      $('scanBtn').disabled=!m || state.animating;
+      $('dispatchBtn').disabled=!m || state.animating;
+      $('autoBtn').disabled=!m || state.animating;
+      if(full) renderHeroList();
+    }
+    function renderHeroList(){
+      const el=$('heroList'); el.innerHTML='';
+      heroes.forEach(h=>{
+        const div=document.createElement('div'); div.className='heroCard';
+        div.innerHTML=`<span class="heroDot" style="color:#${h.color.toString(16).padStart(6,'0')};background:#${h.color.toString(16).padStart(6,'0')}"></span><div><b>${h.name}</b><small>${h.role} · speed ${h.speed} · power ${h.power}</small></div><span class="heroState">${h.status}</span>`;
+        el.appendChild(div);
+      });
+    }
+    function log(msg){
+      const time=new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      state.logs.unshift(`[${time}] ${msg}`); state.logs=state.logs.slice(0,48);
+      $('log').innerHTML=state.logs.map(x=>`<div>${escapeHtml(x)}</div>`).join('');
+    }
+    function escapeHtml(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+    function drawMiniMap(){
+      const ctx=miniCtx,w=mini.width,h=mini.height; ctx.clearRect(0,0,w,h);
+      ctx.fillStyle='rgba(1,4,12,.86)'; ctx.fillRect(0,0,w,h);
+      const map=p=>({x:(p.x+380)/760*w,y:(p.z+380)/760*h});
+      // district tint
+      const plates=[
+        {x:0,z:0,w:260,d:260,c:'rgba(111,231,255,.07)'},{x:-245,z:-245,w:250,d:250,c:'rgba(255,138,61,.08)'},{x:-245,z:245,w:250,d:250,c:'rgba(255,91,214,.08)'},
+        {x:245,z:-245,w:250,d:250,c:'rgba(85,170,255,.08)'},{x:245,z:245,w:250,d:250,c:'rgba(120,255,159,.08)'},{x:245,z:10,w:250,d:230,c:'rgba(180,112,255,.08)'}
+      ];
+      plates.forEach(p=>{const a=map({x:p.x-p.w/2,z:p.z-p.d/2}), b=map({x:p.x+p.w/2,z:p.z+p.d/2}); ctx.fillStyle=p.c; ctx.fillRect(a.x,a.y,b.x-a.x,b.y-a.y);});
+      city.edges.forEach(e=>{const A=map(city.nodeMap.get(e.a)),B=map(city.nodeMap.get(e.b));ctx.strokeStyle=e.blocked?'rgba(255,88,107,.8)':'rgba(140,170,190,.45)';ctx.lineWidth=e.type==='arterial'?2.5:1.4;ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.stroke();});
+      if(state.selectedRoute){ctx.strokeStyle='#ffe66d';ctx.lineWidth=4;ctx.beginPath();state.selectedRoute.route.path.forEach((id,i)=>{const p=map(city.nodeMap.get(id)); if(i) ctx.lineTo(p.x,p.y); else ctx.moveTo(p.x,p.y);});ctx.stroke();}
+      heroes.forEach(hh=>{const p=map(city.nodeMap.get(hh.node));ctx.fillStyle='#6fe7ff';ctx.beginPath();ctx.arc(p.x,p.y,5,0,Math.PI*2);ctx.fill();});
+      if(state.activeMission){const p=map(state.activeMission);ctx.fillStyle='#ff586b';ctx.beginPath();ctx.arc(p.x,p.y,7+Math.sin(performance.now()*.01)*2,0,Math.PI*2);ctx.fill();}
+    }
+
+    function exportCSV(){
+      const header=['stage','mission','district','villain','hero','distance_m','eta_cost','avg_risk_percent','damage','score','success'];
+      const rows=state.csvRows.map(r=>[r.stage,r.mission,r.district,r.villain,r.hero,r.distance,r.eta,r.risk,r.damage,r.score,r.success]);
+      const csv=[header.join(','),...rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','))].join('\n');
+      const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='nayan_city_mission_log.csv'; a.click(); URL.revokeObjectURL(a.href);
+    }
+
+    // ---------- Events ----------
+    $('enterBtn').onclick=()=>{$('boot').style.display='none';};
+    $('startBtn').onclick=startStage;
+    $('scanBtn').onclick=()=>scanRoute();
+    $('dispatchBtn').onclick=dispatch;
+    $('autoBtn').onclick=autoPick;
+    $('exportBtn').onclick=exportCSV;
+    $('heroSelect').onchange=e=>{state.selectedHeroId=e.target.value; state.selectedRoute=null; if(state.routeLine){scene.remove(state.routeLine); state.routeLine=null;} clearGIS(); log('Hero selected: '+heroes.find(h=>h.id===state.selectedHeroId).name+'. Jalankan GIS Scan lagi.'); drawMiniMap();};
+
+    addEventListener('resize',()=>{
+      renderer.setSize(innerWidth,innerHeight);
+      camera.left=-innerWidth/2; camera.right=innerWidth/2; camera.top=innerHeight/2; camera.bottom=-innerHeight/2; camera.updateProjectionMatrix();
+    });
+    renderer.domElement.addEventListener('pointerdown',e=>{state.dragging=true;state.lastMouseX=e.clientX;});
+    addEventListener('pointerup',()=>state.dragging=false);
+    addEventListener('pointermove',e=>{if(state.dragging){state.cameraAngle += (e.clientX-state.lastMouseX)*.006; state.lastMouseX=e.clientX;}});
+    renderer.domElement.addEventListener('wheel',e=>{state.cameraRadius=clamp(state.cameraRadius+e.deltaY*.45,520,1250);},{passive:true});
+
+    // keyboard shortcuts
+    addEventListener('keydown',e=>{if(e.key==='s')startStage(); if(e.key==='g')scanRoute(); if(e.key==='d')dispatch(); if(e.key==='a')autoPick();});
+
+    updateUI(); updateCamera(); requestAnimationFrame(tick);
+  })();
+  </script>
+</body>
+</html>
